@@ -1,0 +1,21 @@
+# Ignore build artifacts
+.pio
+
+# Ignore IDE files
+.vscode
+.cursor
+.idea
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore local configuration files
+appsettings.json
+appsettings.Development.json
+
+# Ignore volatile UI-related state
+.obsidian/workspace.json
+.obsidian/app.json
+
+# Arduino: hemmeligheder (WiFi, API-nøgler) – kopiér fra secrets.h.example
+Arduino/src/secrets.h
