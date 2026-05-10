@@ -19,3 +19,9 @@ appsettings.Development.json
 
 # Arduino: hemmeligheder (WiFi, API-nøgler) – kopiér fra secrets.h.example
 Arduino/src/secrets.h
+
+# DotNet Solutions
+obj/
+bin/
+.vs
+DotNet/.tmp-build/

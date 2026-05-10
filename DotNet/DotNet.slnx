@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="DotNet.ApiService/DotNet.ApiService.csproj" />
+  <Project Path="DotNet.AppHost/DotNet.AppHost.csproj" />
+  <Project Path="DotNet.ServiceDefaults/DotNet.ServiceDefaults.csproj" />
+  <Project Path="DotNet.Tests/DotNet.Tests.csproj" />
+  <Project Path="DotNet.Web/DotNet.Web.csproj" />
+</Solution>
