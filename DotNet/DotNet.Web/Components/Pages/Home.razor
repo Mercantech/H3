@@ -1,7 +1,132 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>H3 2026 — IoT &amp; Serverside</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="h3-hero">
+    <div class="h3-hero__glow" aria-hidden="true"></div>
+    <div class="h3-hero__content">
+        <p class="h3-eyebrow">Mercantec · Hovedforløb 3</p>
+        <h1>H3 2026</h1>
+        <p class="h3-lead">
+            Byg et IoT-system fra sensor til sky — Arduino Oplà måler miljødata,
+            .NET API'et modtager dem, og jeres Blazor-dashboard viser det live.
+        </p>
+        <div class="h3-hero__actions">
+            <a class="h3-btn h3-btn--primary" href="https://mercantec.notion.site/h3-2026" target="_blank" rel="noopener">
+                Åbn forløbsplan
+            </a>
+            <a class="h3-btn h3-btn--ghost" href="weather">Se API-demo</a>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<section class="h3-stats" aria-label="Nøgletal">
+    @foreach (var stat in Stats)
+    {
+        <article class="h3-stat">
+            <strong>@stat.Value</strong>
+            <span>@stat.Label</span>
+        </article>
+    }
+</section>
+
+<section class="h3-flow" aria-label="Projektflow">
+    <h2>Fra hardware til dashboard</h2>
+    <p class="h3-section-intro">I arbejder sprint for sprint mod et stabilt MVP — og bygger derefter videre.</p>
+    <ol class="h3-pipeline">
+        @foreach (var step in Pipeline)
+        {
+            <li class="h3-pipeline__step">
+                <span class="h3-pipeline__icon" aria-hidden="true">@step.Icon</span>
+                <div>
+                    <h3>@step.Title</h3>
+                    <p>@step.Description</p>
+                </div>
+            </li>
+        }
+    </ol>
+</section>
+
+<section class="h3-timeline" aria-label="Forløbsoversigt">
+    <h2>9 uger · okt–dec 2026</h2>
+    <p class="h3-section-intro">Fra første blinkende LED til deploy, test og eksamen.</p>
+    <div class="h3-weeks">
+        @foreach (var week in Weeks)
+        {
+            <article class="h3-week h3-week--@week.Theme">
+                <div class="h3-week__marker">
+                    <span class="h3-week__num">@week.Number</span>
+                </div>
+                <div class="h3-week__body">
+                    <p class="h3-week__ku">@week.Ku</p>
+                    <h3>@week.Title</h3>
+                    <p>@week.Summary</p>
+                </div>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="h3-stack" aria-label="Teknologier">
+    <h2>Det I arbejder med</h2>
+    <ul class="h3-chips">
+        @foreach (var tech in Technologies)
+        {
+            <li>@tech</li>
+        }
+    </ul>
+</section>
+
+<section class="h3-cta">
+    <h2>Klar til at kode?</h2>
+    <p>Repo'et indeholder Arduino-demo, .NET Aspire-stack og Docker-deploy til <code>h3.mercantec.tech</code>.</p>
+    <a class="h3-btn h3-btn--primary" href="https://github.com/Mercantech/H3" target="_blank" rel="noopener">
+        GitHub-repo
+    </a>
+</section>
+
+@code {
+    private const string NotionUrl = "https://mercantec.notion.site/h3-2026";
+
+    private static readonly (string Value, string Label)[] Stats =
+    [
+        ("9", "uger"),
+        ("28", "elever"),
+        ("8", "grupper á 3"),
+        ("2", "undervisere"),
+    ];
+
+    private static readonly (string Icon, string Title, string Description)[] Pipeline =
+    [
+        ("📟", "Arduino Oplà", "Sensorer, display og Wi-Fi på MKR WiFi 1010 + IoT Carrier."),
+        ("📡", "Data til skyen", "Enheder registreres og sender målinger via HTTP/MQTT."),
+        ("⚙️", ".NET API", "Serverside med database, validering, sikkerhed og deployment."),
+        ("📊", "Live dashboard", "Blazor-frontend med realtidsvisning og udvidelser."),
+    ];
+
+    private static readonly (int Number, string Ku, string Title, string Summary, string Theme)[] Weeks =
+    [
+        (1, "KU43", "Arduino & IoT", "Hardware i hænderne — sensorer, API-kald og første live data.", "hardware"),
+        (2, "KU44", "Mere Arduino", "Modulær kode, debugging og mere avanceret embedded-logik.", "hardware"),
+        (3, "KU45", "Serverside", "Web API, arkitektur og fundamentet til jeres backend.", "backend"),
+        (4, "KU46", "Mere serverside", "Database, DTO'er, routing og solid API-struktur.", "backend"),
+        (5, "KU47", "Projektuge", "Sprint mod MVP: enheder + live visning i dashboard.", "project"),
+        (6, "KU48", "Test & sikkerhed", "Unit tests, OWASP-tænkning og hærdning af løsningen.", "security"),
+        (7, "KU49", "Integration", "Samler IoT, API og frontend i én sammenhængende løsning.", "project"),
+        (8, "KU50", "Projektuge", "Udvidelser: historik, notifikationer eller to-vejs styring.", "project"),
+        (9, "KU51", "Eksamen", "Færdiggørelse, dokumentation og aflevering af projekt.", "exam"),
+    ];
+
+    private static readonly string[] Technologies =
+    [
+        "Arduino / PlatformIO",
+        "C# / .NET 10",
+        "Blazor",
+        "ASP.NET Web API",
+        "Docker & Dokploy",
+        "Redis",
+        "Git & GitHub",
+        "Obsidian-noter",
+        "Infisical secrets",
+    ];
+}
