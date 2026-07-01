@@ -4,46 +4,67 @@
 
 @inject WeatherApiClient WeatherApi
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>API-demo — Vejr fra backend</PageTitle>
 
-<h1>Weather</h1>
+<section class="weather-hero">
+    <p class="weather-eyebrow">Live data fra DotNet.ApiService</p>
+    <h1>API-demo</h1>
+    <p class="weather-lead">
+        Denne side henter vejrprognoser fra <code>GET /weatherforecast</code> via Aspire service discovery
+        (<code>https+http://apiservice</code>).
+    </p>
+    <div class="weather-status weather-status--@StatusClass" role="status">
+        <span class="weather-status__dot" aria-hidden="true"></span>
+        @StatusText
+    </div>
+</section>
 
-<p>This component demonstrates showing data loaded from a backend API service.</p>
-
-@if (forecasts == null)
+@if (forecasts is null)
 {
-    <p><em>Loading...</em></p>
+    <p class="weather-loading"><em>Henter data fra API'et…</em></p>
+}
+else if (forecasts.Length == 0)
+{
+    <p class="weather-empty">Ingen data modtaget fra API'et.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Farenheit">Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="weather-grid">
+        @foreach (var forecast in forecasts)
+        {
+            <article class="weather-card">
+                <p class="weather-card__date">@forecast.Date.ToString("dddd d. MMM", DanishCulture)</p>
+                <p class="weather-card__temp">@forecast.TemperatureC°</p>
+                <p class="weather-card__temp-f">@forecast.TemperatureF°F</p>
+                <p class="weather-card__summary">@forecast.Summary</p>
+            </article>
+        }
+    </div>
 }
 
 @code {
+    private static readonly System.Globalization.CultureInfo DanishCulture =
+        new("da-DK");
+
     private WeatherForecast[]? forecasts;
+    private string StatusText = "Forbinder til API…";
+    private string StatusClass = "loading";
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await WeatherApi.GetWeatherAsync();
+        try
+        {
+            forecasts = await WeatherApi.GetWeatherAsync();
+            StatusText = forecasts.Length > 0
+                ? $"{forecasts.Length} prognoser hentet fra ApiService"
+                : "API svarede, men returnerede ingen data";
+            StatusClass = forecasts.Length > 0 ? "ok" : "warn";
+        }
+        catch (Exception)
+        {
+            forecasts = [];
+            StatusText = "Kunne ikke nå ApiService — tjek at begge services kører";
+            StatusClass = "error";
+        }
     }
 }

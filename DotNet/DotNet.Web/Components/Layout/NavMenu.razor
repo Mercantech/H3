@@ -1,29 +1,42 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">H3 2026</a>
+﻿<div class="h3-nav">
+    <div class="h3-nav__brand">
+        <a class="h3-nav__brand-link" href="">
+            <span class="h3-nav__logo" aria-hidden="true">H3</span>
+            <span class="h3-nav__brand-text">
+                <strong>H3 2026</strong>
+                <small>IoT &amp; Serverside</small>
+            </span>
+        </a>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+    <input type="checkbox" id="h3-nav-toggle" class="h3-nav__toggle" title="Menu" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill" aria-hidden="true"></span> Forløb
+    <label for="h3-nav-toggle" class="h3-nav__toggle-btn" aria-label="Åbn menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+
+    <div class="h3-nav__panel">
+        <nav class="h3-nav__links" aria-label="Hovednavigation">
+            <NavLink class="h3-nav__link" href="" Match="NavLinkMatch.All">
+                <span class="h3-nav__icon" aria-hidden="true">◎</span>
+                <span>Forløb</span>
             </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Counter
+            <NavLink class="h3-nav__link" href="weather">
+                <span class="h3-nav__icon" aria-hidden="true">⚡</span>
+                <span>API-demo</span>
             </NavLink>
-        </div>
+        </nav>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested" aria-hidden="true"></span> Weather
-            </NavLink>
+        <div class="h3-nav__footer">
+            <p class="h3-nav__footer-label">Eksterne links</p>
+            <a class="h3-nav__external" href="https://mercantec.notion.site/h3-2026" target="_blank" rel="noopener">
+                Notion-plan ↗
+            </a>
+            <a class="h3-nav__external" href="https://github.com/Mercantech/H3" target="_blank" rel="noopener">
+                GitHub-repo ↗
+            </a>
         </div>
-    </nav>
+    </div>
 </div>
