@@ -1,3 +1,9 @@
+# Dokploy-deploy: docker compose -f ./DotNet/docker-compose.yml up -d --build
+#
+# Routing (samme mønster som øvrige Mercantec-apps):
+#   1. Cloudflare: *.mercantec.tech (wildcard CNAME → tunnel)
+#   2. Tunnel ingress: *.mercantec.tech → http://localhost:80
+#   3. Traefik (Dokploy): Host(`h3.mercantec.tech`) → web:8080
 services:
   redis:
     image: redis:7-alpine
@@ -6,7 +12,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - h3-internal
+      - internal
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -34,7 +40,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - h3-internal
+      - internal
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 15s
@@ -59,15 +65,14 @@ services:
       apiservice:
         condition: service_healthy
     networks:
-      - h3-internal
-      - traefik
+      - internal
+      - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
-      - traefik.http.routers.h3-web.rule=Host(`${H3_HOST:-h3.mercantec.tech}`)
-      - traefik.http.routers.h3-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
-      - traefik.http.routers.h3-web.tls=true
-      - traefik.http.routers.h3-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.h3-web.rule=Host(`${APP_DOMAIN:-h3.mercantec.tech}`)
+      - traefik.http.routers.h3-web.entrypoints=web
+      - traefik.http.routers.h3-web.service=h3-web
       - traefik.http.services.h3-web.loadbalancer.server.port=8080
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -77,10 +82,9 @@ services:
       start_period: 25s
 
 networks:
-  traefik:
+  dokploy-network:
     external: true
-    name: ${TRAEFIK_NETWORK:-traefik}
-  h3-internal:
+  internal:
     driver: bridge
 
 volumes:
