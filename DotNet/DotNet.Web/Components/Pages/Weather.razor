@@ -1,17 +1,30 @@
 ﻿@page "/weather"
-@attribute [StreamRendering(true)]
-@attribute [OutputCache(Duration = 5)]
+@rendermode InteractiveServer
 
 @inject WeatherApiClient WeatherApi
 
 <PageTitle>API-demo — Vejr fra backend</PageTitle>
 
 <section class="weather-hero">
-    <p class="weather-eyebrow">Live data fra DotNet.ApiService</p>
-    <h1>API-demo</h1>
+    <div class="weather-hero__top">
+        <div>
+            <p class="weather-eyebrow">Live data fra DotNet.ApiService</p>
+            <h1>API-demo</h1>
+        </div>
+        <button class="weather-refresh" type="button" @onclick="RefreshAsync" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span>Henter…</span>
+            }
+            else
+            {
+                <span>↻ Opdater fra API</span>
+            }
+        </button>
+    </div>
     <p class="weather-lead">
-        Denne side henter vejrprognoser fra <code>GET /weatherforecast</code> via Aspire service discovery
-        (<code>https+http://apiservice</code>).
+        Kalder <code>GET /weatherforecast</code> via Aspire service discovery. Netværkspanelet nedenfor
+        viser request/response som i browserens DevTools — her fanget server-side fra Web → ApiService.
     </p>
     <div class="weather-status weather-status--@StatusClass" role="status">
         <span class="weather-status__dot" aria-hidden="true"></span>
@@ -19,15 +32,94 @@
     </div>
 </section>
 
-@if (forecasts is null)
+<section class="net-panel" aria-label="Netværkstrafik">
+    <div class="net-panel__toolbar">
+        <span class="net-panel__title">Network</span>
+        <span class="net-panel__count">@networkLog.Count request@(networkLog.Count == 1 ? "" : "s")</span>
+    </div>
+
+    @if (networkLog.Count == 0)
+    {
+        <p class="net-panel__empty">Ingen kald endnu — tryk <strong>Opdater fra API</strong>.</p>
+    }
+    else
+    {
+        <div class="net-table-wrap">
+            <table class="net-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in networkLog)
+                    {
+                        var isSelected = selectedTrace?.Id == entry.Id;
+                        <tr class="net-row @(isSelected ? "net-row--selected" : null) @(entry.Success ? "net-row--ok" : "net-row--fail")"
+                            @onclick="() => SelectTrace(entry)">
+                            <td class="net-row__name" title="@entry.Url">@entry.Path</td>
+                            <td>
+                                <span class="net-badge net-badge--@(entry.Success ? "ok" : "fail")">@entry.StatusCode @entry.StatusText</span>
+                            </td>
+                            <td>fetch</td>
+                            <td>@FormatSize(entry.ResponseSizeBytes)</td>
+                            <td>@entry.DurationMs ms</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (selectedTrace is not null)
+        {
+            <div class="net-detail">
+                <div class="net-detail__tabs" role="tablist">
+                    <button type="button" class="net-detail__tab @(detailTab == "general" ? "net-detail__tab--active" : null)" @onclick='() => detailTab = "general"'>General</button>
+                    <button type="button" class="net-detail__tab @(detailTab == "headers" ? "net-detail__tab--active" : null)" @onclick='() => detailTab = "headers"'>Headers</button>
+                    <button type="button" class="net-detail__tab @(detailTab == "response" ? "net-detail__tab--active" : null)" @onclick='() => detailTab = "response"'>Response</button>
+                </div>
+
+                @if (detailTab == "general")
+                {
+                    <dl class="net-kv">
+                        <div><dt>Request URL</dt><dd>@selectedTrace.Url</dd></div>
+                        <div><dt>Request Method</dt><dd>@selectedTrace.Method</dd></div>
+                        <div><dt>Status Code</dt><dd>@selectedTrace.StatusCode @selectedTrace.StatusText</dd></div>
+                        <div><dt>Started</dt><dd>@selectedTrace.StartedAt.ToLocalTime().ToString("HH:mm:ss.fff")</dd></div>
+                        <div><dt>Duration</dt><dd>@selectedTrace.DurationMs ms</dd></div>
+                        <div><dt>Content-Type</dt><dd>@selectedTrace.ContentType</dd></div>
+                        @if (selectedTrace.Error is not null)
+                        {
+                            <div><dt>Fejl</dt><dd class="net-kv__error">@selectedTrace.Error</dd></div>
+                        }
+                    </dl>
+                }
+                else if (detailTab == "headers")
+                {
+                    <pre class="net-code">@if (selectedTrace.ResponseHeaders.Length == 0) { <text>(ingen headers)</text> } else { @string.Join(Environment.NewLine, selectedTrace.ResponseHeaders) }</pre>
+                }
+                else
+                {
+                    <pre class="net-code">@selectedTrace.ResponsePreview</pre>
+                }
+            </div>
+        }
+    }
+</section>
+
+@if (isLoading && forecasts is null)
 {
     <p class="weather-loading"><em>Henter data fra API'et…</em></p>
 }
-else if (forecasts.Length == 0)
+else if (forecasts is not null && forecasts.Length == 0)
 {
-    <p class="weather-empty">Ingen data modtaget fra API'et.</p>
+    <p class="weather-empty">Ingen vejrdata i response.</p>
 }
-else
+else if (forecasts is not null)
 {
     <div class="weather-grid">
         @foreach (var forecast in forecasts)
@@ -43,28 +135,56 @@ else
 }
 
 @code {
-    private static readonly System.Globalization.CultureInfo DanishCulture =
-        new("da-DK");
+    private static readonly System.Globalization.CultureInfo DanishCulture = new("da-DK");
 
     private WeatherForecast[]? forecasts;
-    private string StatusText = "Forbinder til API…";
+    private readonly List<ApiNetworkTrace> networkLog = [];
+    private ApiNetworkTrace? selectedTrace;
+    private string detailTab = "general";
+    private bool isLoading;
+    private string StatusText = "Klar til at kalde API";
     private string StatusClass = "loading";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await RefreshAsync();
+
+    private async Task RefreshAsync()
     {
-        try
+        isLoading = true;
+        StatusText = "Kalder ApiService…";
+        StatusClass = "loading";
+        StateHasChanged();
+
+        var result = await WeatherApi.FetchWeatherAsync();
+        forecasts = result.Forecasts;
+        networkLog.Insert(0, result.Trace);
+        selectedTrace = result.Trace;
+        detailTab = "general";
+
+        if (result.Trace.Success && forecasts.Length > 0)
         {
-            forecasts = await WeatherApi.GetWeatherAsync();
-            StatusText = forecasts.Length > 0
-                ? $"{forecasts.Length} prognoser hentet fra ApiService"
-                : "API svarede, men returnerede ingen data";
-            StatusClass = forecasts.Length > 0 ? "ok" : "warn";
+            StatusText = $"{forecasts.Length} prognoser · {result.Trace.DurationMs} ms · HTTP {result.Trace.StatusCode}";
+            StatusClass = "ok";
         }
-        catch (Exception)
+        else if (result.Trace.Success)
         {
-            forecasts = [];
-            StatusText = "Kunne ikke nå ApiService — tjek at begge services kører";
+            StatusText = "API svarede OK, men ingen data i body";
+            StatusClass = "warn";
+        }
+        else
+        {
+            StatusText = result.Trace.Error ?? $"HTTP {result.Trace.StatusCode} {result.Trace.StatusText}";
             StatusClass = "error";
         }
+
+        isLoading = false;
     }
+
+    private void SelectTrace(ApiNetworkTrace trace)
+    {
+        selectedTrace = trace;
+        detailTab = "general";
+    }
+
+    private static string FormatSize(int bytes) =>
+        bytes < 1024 ? $"{bytes} B" : $"{bytes / 1024.0:0.1} KB";
 }

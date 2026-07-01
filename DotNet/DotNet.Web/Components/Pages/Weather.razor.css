@@ -6,6 +6,36 @@
     border: 1px solid #dbeafe;
 }
 
+.weather-hero__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.weather-refresh {
+    flex-shrink: 0;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: #0f172a;
+    color: #f8fafc;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.weather-refresh:hover:not(:disabled) {
+    background: #1e293b;
+}
+
+.weather-refresh:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
 .weather-eyebrow {
     margin: 0 0 0.35rem;
     font-size: 0.78rem;
@@ -111,4 +141,181 @@
     font-size: 0.95rem;
     font-weight: 600;
     color: #334155;
+}
+
+.net-panel {
+    margin-bottom: 1.5rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid #334155;
+    background: #1e1e1e;
+    color: #e5e7eb;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+.net-panel__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.85rem;
+    background: #252526;
+    border-bottom: 1px solid #3c3c3c;
+}
+
+.net-panel__title {
+    font-weight: 700;
+    color: #f3f4f6;
+}
+
+.net-panel__count {
+    color: #9ca3af;
+}
+
+.net-panel__empty {
+    margin: 0;
+    padding: 1rem 0.85rem;
+    color: #9ca3af;
+}
+
+.net-table-wrap {
+    overflow-x: auto;
+}
+
+.net-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.net-table th {
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #9ca3af;
+    border-bottom: 1px solid #3c3c3c;
+    white-space: nowrap;
+}
+
+.net-table td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid #2d2d2d;
+    white-space: nowrap;
+}
+
+.net-row {
+    cursor: pointer;
+}
+
+.net-row:hover {
+    background: #2a2d2e;
+}
+
+.net-row--selected {
+    background: #094771;
+}
+
+.net-row__name {
+    color: #93c5fd;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.net-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.net-badge--ok {
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+}
+
+.net-badge--fail {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+.net-detail {
+    border-top: 1px solid #3c3c3c;
+    background: #1e1e1e;
+}
+
+.net-detail__tabs {
+    display: flex;
+    gap: 0.15rem;
+    padding: 0.35rem 0.5rem 0;
+    border-bottom: 1px solid #3c3c3c;
+}
+
+.net-detail__tab {
+    padding: 0.35rem 0.65rem;
+    border: none;
+    border-radius: 0.35rem 0.35rem 0 0;
+    background: transparent;
+    color: #9ca3af;
+    font: inherit;
+    cursor: pointer;
+}
+
+.net-detail__tab--active {
+    background: #2d2d2d;
+    color: #f3f4f6;
+}
+
+.net-kv {
+    margin: 0;
+    padding: 0.75rem 0.85rem;
+    display: grid;
+    gap: 0.55rem;
+}
+
+.net-kv div {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 0.75rem;
+}
+
+.net-kv dt {
+    margin: 0;
+    color: #9ca3af;
+}
+
+.net-kv dd {
+    margin: 0;
+    color: #e5e7eb;
+    word-break: break-all;
+}
+
+.net-kv__error {
+    color: #fca5a5;
+}
+
+.net-code {
+    margin: 0;
+    padding: 0.75rem 0.85rem;
+    max-height: 16rem;
+    overflow: auto;
+    color: #d1d5db;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 640px) {
+    .weather-hero__top {
+        flex-direction: column;
+    }
+
+    .weather-refresh {
+        width: 100%;
+    }
+
+    .net-kv div {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
+    }
 }
