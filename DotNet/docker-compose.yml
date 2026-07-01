@@ -1,0 +1,87 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - h3-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  apiservice:
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile.apiservice
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__cache: redis:6379
+      HealthChecks__Enabled: "true"
+      Infisical__ClientId: ${INFISICAL__CLIENTID:-}
+      Infisical__ClientSecret: ${INFISICAL__CLIENTSECRET:-}
+      Infisical__ProjectId: ${INFISICAL__PROJECTID:-}
+      Infisical__EnvironmentSlug: ${INFISICAL__ENVIRONMENTSLUG:-}
+      Infisical__SecretPath: ${INFISICAL__SECRETPATH:-/}
+      Infisical__HostUri: ${INFISICAL__HOSTURI:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - h3-internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile.web
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__cache: redis:6379
+      HealthChecks__Enabled: "true"
+      services__apiservice__http__0: http://apiservice:8080
+    depends_on:
+      redis:
+        condition: service_healthy
+      apiservice:
+        condition: service_healthy
+    networks:
+      - h3-internal
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.h3-web.rule=Host(`${H3_HOST:-h3.mercantec.tech}`)
+      - traefik.http.routers.h3-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.h3-web.tls=true
+      - traefik.http.routers.h3-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.services.h3-web.loadbalancer.server.port=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
+  h3-internal:
+    driver: bridge
+
+volumes:
+  redis-data:

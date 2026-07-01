@@ -1,0 +1,10 @@
+**/.git
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/bin
+**/obj
+**/Docker
+**/.env
+**/appsettings.Development.json
+**/appsettings.*.local.json

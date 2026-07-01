@@ -25,3 +25,4 @@ obj/
 bin/
 .vs
 DotNet/.tmp-build/
+DotNet/.env
