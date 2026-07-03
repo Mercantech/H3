@@ -1,36 +1,43 @@
 /*
- * config.h – Projektkonfiguration (ingen hemmeligheder)
+ * config.h – Project configuration (no secrets)
  *
- * Her samles alle indstillinger, der kan deles og versioneres.
- * WiFi-adgangskoder m.m. hører til i secrets.h (som er i .gitignore).
+ * Safe to commit. WiFi passwords and API keys belong in secrets.h.
  */
 
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// ----- Seriel kommunikation -----
+// ----- Serial -----
 #define SERIAL_BAUD 9600
 
-// ----- Display (rund skærm 240×240) -----
-#define DISPLAY_W           240
-#define DISPLAY_H           240
+// ----- Display (round 240×240) -----
+#define DISPLAY_WIDTH           240
+#define DISPLAY_HEIGHT          240
+#define DISPLAY_INTERVAL_MS     500
 
-// ----- Display-opdatering -----
-#define DISPLAY_INTERVAL_MS 500
-
-// ----- Ryst-detektor -----
-#define SHAKE_THRESHOLD      2.5f
-#define SHAKE_DEBOUNCE_MS    800
+// ----- Shake detection -----
+#define SHAKE_THRESHOLD         2.5f
+#define SHAKE_DEBOUNCE_MS       800
 
 // ----- LEDs -----
-#define LED_BRIGHTNESS  200
-#define LED_COUNT       5
+#define LED_BRIGHTNESS          200
+#define LED_COUNT               5
 
-// ----- Oplà carrier -----
-// Sæt til 1 hvis du bruger den medfølgende plastik-kasse (kalibrerer touch)
-#define CARRIER_USE_CASE 0
+// ----- Touch buttons (carrier pad indices) -----
+#define TOUCH_INDEX_SHAKE_MODE  TOUCH3
+#define TOUCH_INDEX_LED_SHOW    TOUCH4
 
-// ----- WiFi (bruges kun hvis USE_WIFI er 1 og secrets.h er udfyldt) -----
-#define USE_WIFI 0
+// ----- Carrier -----
+// Set to 1 when using the plastic case (touch calibration)
+#define CARRIER_USE_CASE        0
+
+// ----- WiFi (only when USE_WIFI is 1 and secrets.h is filled in) -----
+#define USE_WIFI                0
+#define WIFI_CONNECT_ATTEMPTS   10
+#define WIFI_CONNECT_RETRY_MS   500
+
+// ----- Timing -----
+#define STARTUP_SPLASH_DELAY_MS 1500
+#define LOOP_DELAY_MS           30
 
 #endif /* CONFIG_H */

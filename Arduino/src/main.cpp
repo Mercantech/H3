@@ -1,106 +1,84 @@
 /*
- * Oplà IoT Carrier – Sjov demo
+ * Oplà IoT Carrier – teaching demo
  *
- * Opdeling af kode (til undervisning):
- *   - config.h         = indstillinger (versioneres)
- *   - secrets.h        = WiFi/passwords (i .gitignore)
- *   - display_utils.*  = alt der vises på den runde skærm
- *   - led_utils.*      = styring af de 5 RGB-LEDs
- *   - main.cpp         = kun setup, loop og logik (touch, sensor, gesture)
- *
- * De 5 knapper styrer hver sin LED (knap 0 → LED 0 osv.). Touch 3: ryst on/off, Touch 4: kort LED-show.
- * Ingen lyd – egnet til mange enheder i samme lokale.
+ * Structure:
+ *   config.h / secrets.h     – settings and credentials
+ *   types.h                  – shared structs
+ *   environment_sensors.*    – read temperature, humidity, pressure
+ *   display_renderer.*       – round display output
+ *   led_controller.*         – RGB ring
+ *   shake_detector.*         – IMU shake detection
+ *   gesture_reader.*         – proximity gestures
+ *   wifi_manager.*           – optional WiFi connect
+ *   temperature_color.*      – pure logic (unit-testable on PC)
+ *   main.cpp                 – setup(), loop(), wiring only
  */
 
 #include <Arduino.h>
-#include <math.h>
 #include <Arduino_MKRIoTCarrier.h>
 
 #include "config.h"
-#include "secrets.h"
-#include "display_utils.h"
-#include "led_utils.h"
-
-#if USE_WIFI
-#include <WiFiNINA.h>
-#endif
+#include "display_renderer.h"
+#include "environment_sensors.h"
+#include "gesture_reader.h"
+#include "led_controller.h"
+#include "shake_detector.h"
+#include "wifi_manager.h"
 
 MKRIoTCarrier carrier;
 
-// Tilstand
-unsigned long lastShakeTime = 0;
-const char* lastGestureStr = "-";
-unsigned long lastDisplayUpdate = 0;
+namespace {
 
-void setup() {
-  Serial.begin(SERIAL_BAUD);
+bool shakeModeEnabled = false;
+char lastGestureLabel[8] = "-";
+unsigned long lastShakeTimestampMs = 0;
+unsigned long lastDisplayUpdateMs = 0;
 
+void initializeCarrier() {
 #if CARRIER_USE_CASE
   carrier.withCase();
 #else
   carrier.noCase();
 #endif
+
   carrier.begin();
   carrier.leds.setBrightness(LED_BRIGHTNESS);
+}
 
-  showStartScreen(carrier);
+}  // namespace
 
-#if USE_WIFI
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.print("WiFi forbinder...");
-  for (int i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("OK: ");
-    Serial.println(WiFi.localIP());
-  } else {
-    Serial.println("WiFi fejlede – demo kører uden net");
-  }
-#endif
-
-  delay(1500);
+void setup() {
+  Serial.begin(SERIAL_BAUD);
+  initializeCarrier();
+  renderStartupScreen(carrier);
+  connectWifi();
+  delay(STARTUP_SPLASH_DELAY_MS);
 }
 
 void loop() {
   carrier.Buttons.update();
 
-  float temp = carrier.Env.readTemperature();
-  float humidity = carrier.Env.readHumidity();
-  float pressure = carrier.Pressure.readPressure();
+  const SensorReading reading = readEnvironmentSensors(carrier);
 
-  static bool shakeMode = false;
-  if (carrier.Buttons.onTouchDown(TOUCH3)) shakeMode = !shakeMode;
-  if (carrier.Buttons.onTouchDown(TOUCH4)) ledsQuickShow(carrier);
-
-  if (carrier.Light.gestureAvailable()) {
-    uint8_t g = carrier.Light.readGesture();
-    if (g == UP)       lastGestureStr = "OP";
-    else if (g == DOWN)  lastGestureStr = "NED";
-    else if (g == LEFT)  lastGestureStr = "VEN";
-    else if (g == RIGHT) lastGestureStr = "HOEJ";
+  if (carrier.Buttons.onTouchDown(TOUCH_INDEX_SHAKE_MODE)) {
+    shakeModeEnabled = !shakeModeEnabled;
   }
 
-  bool didShake = false;
-  if (shakeMode && carrier.IMUmodule.accelerationAvailable()) {
-    float x, y, z;
-    carrier.IMUmodule.readAcceleration(x, y, z);
-    float mag = sqrt(x*x + y*y + z*z);
-    if (mag > SHAKE_THRESHOLD && (millis() - lastShakeTime) > SHAKE_DEBOUNCE_MS) {
-      lastShakeTime = millis();
-      didShake = true;
-    }
+  if (carrier.Buttons.onTouchDown(TOUCH_INDEX_LED_SHOW)) {
+    playLedShow(carrier);
   }
 
-  // Hver knap tænder sin egen LED (knap 0 → LED 0 osv.)
-  ledsFromButtons(carrier);
+  pollGestureLabel(carrier, lastGestureLabel, sizeof(lastGestureLabel));
 
-  if (millis() - lastDisplayUpdate >= DISPLAY_INTERVAL_MS) {
-    lastDisplayUpdate = millis();
-    updateDisplay(carrier, temp, humidity, pressure, didShake, lastGestureStr);
+  const bool shakeDetected = detectShake(carrier, shakeModeEnabled, lastShakeTimestampMs);
+
+  renderButtonLeds(carrier);
+
+  const unsigned long nowMs = millis();
+  if (nowMs - lastDisplayUpdateMs >= DISPLAY_INTERVAL_MS) {
+    lastDisplayUpdateMs = nowMs;
+    renderSensorScreen(carrier, reading, shakeDetected, lastGestureLabel);
   }
 
-  delay(30);
+  delay(LOOP_DELAY_MS);
 }
