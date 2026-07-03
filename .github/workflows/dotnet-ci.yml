@@ -30,7 +30,7 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore DotNet.slnx --configfile DotNet.AppHost/nuget.config
+        run: dotnet restore DotNet.slnx
 
       - name: Build
         run: dotnet build DotNet.slnx --no-restore --configuration Release
