@@ -1,0 +1,39 @@
+name: DotNet CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "DotNet/**"
+      - ".github/workflows/dotnet-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "DotNet/**"
+      - ".github/workflows/dotnet-ci.yml"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: DotNet
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore DotNet.slnx --configfile DotNet.AppHost/nuget.config
+
+      - name: Build
+        run: dotnet build DotNet.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test DotNet.slnx --no-build --configuration Release --verbosity normal
