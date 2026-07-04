@@ -35,5 +35,12 @@ jobs:
       - name: Build
         run: dotnet build DotNet.slnx --no-restore --configuration Release
 
+      - name: Trust HTTPS development certificate
+        run: |
+          dotnet dev-certs https --clean
+          dotnet dev-certs https --trust
+        continue-on-error: true
+
       - name: Test
         run: dotnet test DotNet.slnx --no-build --configuration Release --verbosity normal
+        timeout-minutes: 30

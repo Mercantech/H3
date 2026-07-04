@@ -9,6 +9,8 @@ Demo-projekt til MKR WiFi 1010 + MKR IoT Carrier med tydelig modulopdeling.
 - **Display-tekst:** kan være engelsk i skabelonen — tilpas til jeres brugere
 - **`main.cpp`:** kun wiring — læs sensorer, kald moduler, ingen tung logik
 
+
+
 ## Moduler
 
 | Modul | Filer | Ansvar |

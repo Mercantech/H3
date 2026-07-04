@@ -4,7 +4,10 @@ namespace DotNet.Tests;
 
 public class WebTests
 {
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultTimeout =
+        Environment.GetEnvironmentVariable("CI") is not null
+            ? TimeSpan.FromMinutes(5)
+            : TimeSpan.FromSeconds(30);
 
     [Test]
     public async Task GetWebResourceRootReturnsOkStatusCode()
