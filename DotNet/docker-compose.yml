@@ -135,7 +135,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
-      - traefik.http.routers.h3-web.rule=Host(`${APP_DOMAIN:-h3-web.mercantec.tech}`)
+      - traefik.http.routers.h3-web.rule=Host(`${APP_DOMAIN:-h3.mercantec.tech}`)
       - traefik.http.routers.h3-web.entrypoints=web
       - traefik.http.routers.h3-web.service=h3-web
       - traefik.http.services.h3-web.loadbalancer.server.port=8080
