@@ -12,7 +12,7 @@
             <p class="health-eyebrow">Infrastructure status</p>
             <h1>Healthchecks</h1>
         </div>
-        <button class="health-refresh" type="button" @onclick="RefreshAsync" disabled="@isLoading">
+        <button class="health-refresh" type="button" @onclick="RefreshAsync" disabled="@isBusy">
             @if (isLoading)
             {
                 <span>Tjekker…</span>
@@ -25,8 +25,39 @@
     </div>
     <p class="health-lead">
         Kører <code>GET /health</code> mod ApiService (Redis + Postgres) og den lokale Web-host (Redis output cache).
-        Samme endpoints bruges af Docker/Aspire readiness probes.
+        Brug knapperne under til at skrive dummy data, så I kan se forbindelsen i pgweb / Redis Commander.
     </p>
+</section>
+
+<section class="health-seed">
+    <h2>Dummy data</h2>
+    <p>Skriver via ApiService — samme clients som healthchecks bruger.</p>
+    <div class="health-seed__actions">
+        <button class="health-seed__btn" type="button" @onclick="SeedRedisAsync" disabled="@isBusy">
+            @(isSeedingRedis ? "Skriver Redis…" : "Sæt dummy data i Redis")
+        </button>
+        <button class="health-seed__btn" type="button" @onclick="SeedPostgresAsync" disabled="@isBusy">
+            @(isSeedingPostgres ? "Skriver Postgres…" : "Sæt dummy data i Postgres")
+        </button>
+    </div>
+
+    @if (seedResult is not null)
+    {
+        <div class="health-seed__result health-seed__result--@(seedResult.Success ? "ok" : "error")">
+            <div class="health-seed__result-top">
+                <strong>@(seedResult.Success ? "OK" : "Fejl")</strong>
+                <span><code>@seedResult.Path</code> · @seedResult.DurationMs ms · HTTP @seedResult.StatusCode</span>
+            </div>
+            @if (seedResult.Error is not null)
+            {
+                <p class="health-card__error">@seedResult.Error</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(seedResult.RawBody))
+            {
+                <pre class="health-seed__json">@seedResult.RawBody</pre>
+            }
+        </div>
+    }
 </section>
 
 @if (isLoading && apiResult is null && webReport is null)
@@ -120,18 +151,32 @@ else
 
 <section class="health-admin">
     <h2>Admin-paneler</h2>
-    <p>Postgres og Redis har dedikerede admin-UI’er i docker-compose (Traefik-hosts i produktion).</p>
     <ul>
-        <li><strong>pgweb</strong> — <code>h3-pgweb.mercantec.tech</code> (let Postgres-UI, auto-forbundet til <code>h3</code>)</li>
-        <li><strong>Redis Commander</strong> — <code>h3-redis.mercantec.tech</code> (host <code>redis:6379</code>)</li>
+        <li>
+            <a href="https://h3-pgweb.mercantec.tech/" target="_blank" rel="noopener">
+                pgweb — h3-pgweb.mercantec.tech
+            </a>
+            (let Postgres-UI, auto-forbundet til <code>h3</code>)
+        </li>
+        <li>
+            <a href="https://h3-redis.mercantec.tech/" target="_blank" rel="noopener">
+                Redis Commander — h3-redis.mercantec.tech
+            </a>
+            (host <code>redis:6379</code>)
+        </li>
     </ul>
 </section>
 
 @code {
     private HealthProbeResult? apiResult;
     private HealthReport? webReport;
+    private DemoSeedResult? seedResult;
     private long webDurationMs;
     private bool isLoading;
+    private bool isSeedingRedis;
+    private bool isSeedingPostgres;
+
+    private bool isBusy => isLoading || isSeedingRedis || isSeedingPostgres;
 
     protected override async Task OnInitializedAsync() => await RefreshAsync();
 
@@ -149,6 +194,28 @@ else
 
         apiResult = await apiTask;
         isLoading = false;
+    }
+
+    private async Task SeedRedisAsync()
+    {
+        isSeedingRedis = true;
+        seedResult = null;
+        StateHasChanged();
+
+        seedResult = await HealthApi.SeedRedisAsync();
+        isSeedingRedis = false;
+        await RefreshAsync();
+    }
+
+    private async Task SeedPostgresAsync()
+    {
+        isSeedingPostgres = true;
+        seedResult = null;
+        StateHasChanged();
+
+        seedResult = await HealthApi.SeedPostgresAsync();
+        isSeedingPostgres = false;
+        await RefreshAsync();
     }
 
     private static string StatusClass(bool healthy) => healthy ? "ok" : "error";

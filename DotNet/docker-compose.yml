@@ -64,7 +64,8 @@ services:
   pgweb:
     image: sosedoff/pgweb:0.16.2
     restart: unless-stopped
-    command: ["--bind=0.0.0.0", "--listen=8081", "--sessions"]
+    # Undlad --sessions: det nulstiller DATABASE_URL og viser manuel connect-form.
+    command: ["--bind=0.0.0.0", "--listen=8081"]
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-h3}:${POSTGRES_PASSWORD:-h3secret}@postgres:5432/${POSTGRES_DB:-h3}?sslmode=disable
     depends_on:
@@ -134,7 +135,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
-      - traefik.http.routers.h3-web.rule=Host(`${APP_DOMAIN:-h3.mercantec.tech}`)
+      - traefik.http.routers.h3-web.rule=Host(`${APP_DOMAIN:-h3-web.mercantec.tech}`)
       - traefik.http.routers.h3-web.entrypoints=web
       - traefik.http.routers.h3-web.service=h3-web
       - traefik.http.services.h3-web.loadbalancer.server.port=8080

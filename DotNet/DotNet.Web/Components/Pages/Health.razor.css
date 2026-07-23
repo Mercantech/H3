@@ -200,6 +200,93 @@
     max-height: 14rem;
 }
 
+.health-seed {
+    margin-bottom: 1.5rem;
+    padding: 1.15rem 1.2rem;
+    border-radius: 1rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+}
+
+.health-seed h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.1rem;
+    color: #0f172a;
+}
+
+.health-seed > p {
+    margin: 0 0 0.9rem;
+    color: #64748b;
+    font-size: 0.92rem;
+}
+
+.health-seed__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.health-seed__btn {
+    padding: 0.55rem 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.health-seed__btn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.health-seed__btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.health-seed__result {
+    margin-top: 0.9rem;
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.health-seed__result--ok {
+    border-color: #6ee7b7;
+    background: #f0fdf4;
+}
+
+.health-seed__result--error {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+.health-seed__result-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    font-size: 0.88rem;
+    color: #475569;
+}
+
+.health-seed__json {
+    margin: 0;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    overflow: auto;
+    max-height: 16rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .health-admin {
     padding: 1.25rem;
     border-radius: 1rem;
