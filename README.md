@@ -16,7 +16,7 @@
 | **Medlemmer** | [Navn 1], [Navn 2], [Navn 3] |
 | **Undervisere** | Kasper & Mathias |
 | **Forløb** | H3 2026 (okt–dec) |
-| **Live URL** | [https://h3.mercantec.tech](https://h3.mercantec.tech) *(eller jeres egen subdomæne-URL)* |
+| **Live URL** | [https://h3-web.mercantec.tech](https://h3-web.mercantec.tech) *(eller jeres egen subdomæne-URL)* |
 | **Notion-plan** | [mercantec.notion.site/h3-2026](https://mercantec.notion.site/h3-2026) |
 
 ## Arkitektur
@@ -81,7 +81,8 @@ copy .env.example .env
 docker compose up -d --build
 ```
 
-Standard-URL i skabelonen: `h3.mercantec.tech` — skift `APP_DOMAIN` i `.env` hvis I får eget subdomæne.
+Standard-URL i skabelonen: `h3-web.mercantec.tech` — skift `APP_DOMAIN` i `.env` hvis I får eget subdomæne.
+Admin-UI’er: `h3-pgweb.mercantec.tech` (Postgres) og `h3-redis.mercantec.tech` (Redis).
 
 ## Hvad skal I tilpasse i skabelonen?
 

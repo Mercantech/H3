@@ -6,6 +6,8 @@ await InfisicalConfigurationLoader.TryLoadSecretsAsync(builder.Configuration);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+builder.AddRedisClient("cache");
+builder.AddNpgsqlDataSource("h3db");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();

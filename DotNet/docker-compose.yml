@@ -3,7 +3,9 @@
 # Routing (samme mønster som øvrige Mercantec-apps):
 #   1. Cloudflare: *.mercantec.tech (wildcard CNAME → tunnel)
 #   2. Tunnel ingress: *.mercantec.tech → http://localhost:80
-#   3. Traefik (Dokploy): Host(`h3.mercantec.tech`) → web:8080
+#   3. Traefik (Dokploy): Host(`h3-web.mercantec.tech`) → web:8080
+#      Host(`h3-pgweb.mercantec.tech`) → pgweb:8081
+#      Host(`h3-redis.mercantec.tech`) → redis-commander:8081
 services:
   redis:
     image: redis:7-alpine
@@ -20,6 +22,65 @@ services:
       retries: 5
       start_period: 5s
 
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: ${REDIS_UI_USER:-}
+      HTTP_PASSWORD: ${REDIS_UI_PASSWORD:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.h3-redis-ui.rule=Host(`${REDIS_UI_DOMAIN:-h3-redis.mercantec.tech}`)
+      - traefik.http.routers.h3-redis-ui.entrypoints=web
+      - traefik.http.routers.h3-redis-ui.service=h3-redis-ui
+      - traefik.http.services.h3-redis-ui.loadbalancer.server.port=8081
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-h3}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-h3secret}
+      POSTGRES_DB: ${POSTGRES_DB:-h3}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  pgweb:
+    image: sosedoff/pgweb:0.16.2
+    restart: unless-stopped
+    command: ["--bind=0.0.0.0", "--listen=8081", "--sessions"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-h3}:${POSTGRES_PASSWORD:-h3secret}@postgres:5432/${POSTGRES_DB:-h3}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.h3-pgweb.rule=Host(`${PGWEB_DOMAIN:-h3-pgweb.mercantec.tech}`)
+      - traefik.http.routers.h3-pgweb.entrypoints=web
+      - traefik.http.routers.h3-pgweb.service=h3-pgweb
+      - traefik.http.services.h3-pgweb.loadbalancer.server.port=8081
+
   apiservice:
     build:
       context: .
@@ -29,6 +90,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       ConnectionStrings__cache: redis:6379
+      ConnectionStrings__h3db: Host=postgres;Port=5432;Database=${POSTGRES_DB:-h3};Username=${POSTGRES_USER:-h3};Password=${POSTGRES_PASSWORD:-h3secret}
       HealthChecks__Enabled: "true"
       Infisical__ClientId: ${INFISICAL__CLIENTID:-}
       Infisical__ClientSecret: ${INFISICAL__CLIENTSECRET:-}
@@ -38,6 +100,8 @@ services:
       Infisical__HostUri: ${INFISICAL__HOSTURI:-}
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - internal
@@ -89,3 +153,4 @@ networks:
 
 volumes:
   redis-data:
+  postgres-data:

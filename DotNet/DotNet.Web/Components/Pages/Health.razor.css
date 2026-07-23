@@ -1,0 +1,235 @@
+.health-hero {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #ecfdf5 0%, #f8fafc 100%);
+    border: 1px solid #a7f3d0;
+}
+
+.health-hero__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.health-refresh {
+    flex-shrink: 0;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: #064e3b;
+    color: #ecfdf5;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.health-refresh:hover:not(:disabled) {
+    background: #065f46;
+}
+
+.health-refresh:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.health-eyebrow {
+    margin: 0 0 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #059669;
+}
+
+.health-hero h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #064e3b;
+}
+
+.health-lead {
+    margin: 0;
+    color: #475569;
+    line-height: 1.55;
+    max-width: 42rem;
+}
+
+.health-loading {
+    color: #64748b;
+}
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.health-card {
+    padding: 1.1rem 1.15rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.health-card--ok {
+    border-color: #6ee7b7;
+    background: linear-gradient(180deg, #f0fdf4 0%, #fff 40%);
+}
+
+.health-card--error {
+    border-color: #fca5a5;
+    background: linear-gradient(180deg, #fef2f2 0%, #fff 40%);
+}
+
+.health-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.health-card__header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #0f172a;
+}
+
+.health-badge {
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.health-card--ok .health-badge {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.health-card--error .health-badge {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.health-card__meta {
+    margin: 0 0 0.85rem;
+    color: #64748b;
+    font-size: 0.88rem;
+}
+
+.health-card__error,
+.health-check__error {
+    margin: 0.35rem 0 0;
+    color: #b91c1c;
+    font-size: 0.88rem;
+}
+
+.health-checks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+}
+
+.health-check {
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+    border-left: 3px solid #94a3b8;
+}
+
+.health-check--healthy {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.health-check--degraded {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.health-check--unhealthy {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.health-check__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.2rem;
+}
+
+.health-check__row strong {
+    color: #0f172a;
+}
+
+.health-check p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.84rem;
+}
+
+.health-raw {
+    margin-top: 0.85rem;
+}
+
+.health-raw summary {
+    cursor: pointer;
+    color: #475569;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.health-raw pre {
+    margin: 0.5rem 0 0;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    overflow: auto;
+    max-height: 14rem;
+}
+
+.health-admin {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.health-admin h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+}
+
+.health-admin p {
+    margin: 0 0 0.75rem;
+    color: #475569;
+}
+
+.health-admin ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: #334155;
+    line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+    .health-hero__top {
+        flex-direction: column;
+    }
+
+    .health-refresh {
+        width: 100%;
+    }
+}

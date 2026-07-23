@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="$(AspireVersion)" />
     <PackageReference Include="Aspire.Hosting.Redis" Version="$(AspireVersion)" />
   </ItemGroup>
 

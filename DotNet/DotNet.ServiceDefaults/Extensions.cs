@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -117,7 +118,10 @@ public static class Extensions
         if (healthChecksEnabled)
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks(HealthEndpointPath);
+            app.MapHealthChecks(HealthEndpointPath, new HealthCheckOptions
+            {
+                ResponseWriter = WriteHealthCheckResponseAsync
+            });
 
             // Only health checks tagged with the "live" tag must pass for app to be considered alive
             app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
@@ -127,5 +131,29 @@ public static class Extensions
         }
 
         return app;
+    }
+
+    private static async Task WriteHealthCheckResponseAsync(HttpContext context, HealthReport report)
+    {
+        context.Response.ContentType = "application/json; charset=utf-8";
+
+        var payload = new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = Math.Round(report.TotalDuration.TotalMilliseconds, 2),
+            checks = report.Entries
+                .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(entry => new
+                {
+                    name = entry.Key,
+                    status = entry.Value.Status.ToString(),
+                    durationMs = Math.Round(entry.Value.Duration.TotalMilliseconds, 2),
+                    description = entry.Value.Description,
+                    error = entry.Value.Exception?.Message,
+                    tags = entry.Value.Tags.OrderBy(tag => tag, StringComparer.OrdinalIgnoreCase).ToArray()
+                })
+        };
+
+        await context.Response.WriteAsJsonAsync(payload);
     }
 }
