@@ -3,7 +3,7 @@
 # Routing (samme mønster som øvrige Mercantec-apps):
 #   1. Cloudflare: *.mercantec.tech (wildcard CNAME → tunnel)
 #   2. Tunnel ingress: *.mercantec.tech → http://localhost:80
-#   3. Traefik (Dokploy): Host(`h3-web.mercantec.tech`) → web:8080
+#   3. Traefik (Dokploy): Host(`h3.mercantec.tech`) → web:8080
 #      Host(`h3-pgweb.mercantec.tech`) → pgweb:8081
 #      Host(`h3-redis.mercantec.tech`) → redis-commander:8081
 services:
