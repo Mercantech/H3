@@ -1,11 +1,5 @@
-# Dokploy-deploy: docker compose -f ./DotNet/docker-compose.yml up -d --build
-#
-# Routing (samme mønster som øvrige Mercantec-apps):
-#   1. Cloudflare: *.mercantec.tech (wildcard CNAME → tunnel)
-#   2. Tunnel ingress: *.mercantec.tech → http://localhost:80
-#   3. Traefik (Dokploy): Host(`h3.mercantec.tech`) → web:8080
-#      Host(`h3-pgweb.mercantec.tech`) → pgweb:8081
-#      Host(`h3-redis.mercantec.tech`) → redis-commander:8081
+# Dokploy: docker compose -f ./DotNet/docker-compose.yml up -d --build
+# Host(`h3.mercantec.tech`) → web:8080 (+ valgfri pgweb/redis-ui)
 services:
   redis:
     image: redis:7-alpine
@@ -14,7 +8,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - internal
+      - dokploy-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -33,7 +27,6 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - internal
       - dokploy-network
     labels:
       - traefik.enable=true
@@ -53,7 +46,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - internal
+      - dokploy-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -64,7 +57,6 @@ services:
   pgweb:
     image: sosedoff/pgweb:0.16.2
     restart: unless-stopped
-    # Undlad --sessions: det nulstiller DATABASE_URL og viser manuel connect-form.
     command: ["--bind=0.0.0.0", "--listen=8081"]
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-h3}:${POSTGRES_PASSWORD:-h3secret}@postgres:5432/${POSTGRES_DB:-h3}?sslmode=disable
@@ -72,7 +64,6 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - internal
       - dokploy-network
     labels:
       - traefik.enable=true
@@ -105,7 +96,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - internal
+      - dokploy-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 15s
@@ -130,7 +121,6 @@ services:
       apiservice:
         condition: service_healthy
     networks:
-      - internal
       - dokploy-network
     labels:
       - traefik.enable=true
@@ -149,8 +139,6 @@ services:
 networks:
   dokploy-network:
     external: true
-  internal:
-    driver: bridge
 
 volumes:
   redis-data:
